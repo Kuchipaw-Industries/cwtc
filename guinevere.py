@@ -4,6 +4,7 @@
 
 import customtkinter as ctk
 from tkcalendar import DateEntry
+from tkinter import ttk, messagebox
 from tkinter import ttk
 
 ctk.set_appearance_mode("light")
@@ -43,15 +44,41 @@ def addexp():
     ctk.CTkLabel(grid_frame, text="Amount:", justify=ctk.LEFT).grid(row=2, column=3, pady=5, sticky="ew")
     ctk.CTkLabel(grid_frame, text="Date:", justify=ctk.LEFT).grid(row=3, column=3, pady=5, sticky="ew")
 
-    ctk.CTkEntry(grid_frame, placeholder_text="Enter expense name...").grid(row=1, column=4, padx=10, pady=(10, 5), sticky="ew")
-    ctk.CTkEntry(grid_frame, placeholder_text="Enter amount...").grid(row=2, column=4, padx=10, pady=5, sticky="ew")
-    DateEntry(grid_frame, width=37, background="darkblue", foreground="white", borderwidth=2).grid(row=3, column=4, padx=10, sticky="ew")
+    # keep ang references para ma access ang mga values later ge add ni nako (cj opaw) para sd mag run ang "name_entry" or values sa addexpfunc
+    global name_entry, amount_entry, date_entry
+    name_entry = ctk.CTkEntry(grid_frame, placeholder_text="Enter expense name...")
+    name_entry.grid(row=1, column=4, padx=10, pady=(10, 5), sticky="ew")
 
-# ---------------------------------------------------------------------------------------
+    amount_entry = ctk.CTkEntry(grid_frame, placeholder_text="Enter amount...")
+    amount_entry.grid(row=2, column=4, padx=10, pady=5, sticky="ew")
+
+    date_entry = DateEntry(grid_frame, width=37, background="darkblue", foreground="white", borderwidth=2)
+    date_entry.grid(row=3, column=4, padx=10, sticky="ew")
+
+    # ---------------------------------------------------------------------------------------
     def addexpfunc():
-        # put add expense code here
-        pass
-# ---------------------------------------------------------------------------------------
+        name = name_entry.get().strip()
+        amount = amount_entry.get().strip()
+        date = date_entry.get().strip()
+
+        if not name or not amount or not date:
+            messagebox.showerror("Error", "All fields must be filled!")
+            return
+        try:
+            amount = float(amount)
+        except ValueError:
+            messagebox.showerror("Error", "Amount must be a number!")
+            return
+
+        expense = {"name": name, "amount": amount, "date": date}
+        expenses.append(expense)
+        messagebox.showinfo("Success", "Expense added successfully!")
+
+        # clear entries
+        name_entry.delete(0, "end")
+        amount_entry.delete(0, "end")
+        date_entry.delete(0, "end")
+    # ---------------------------------------------------------------------------------------
 
     ctk.CTkButton(grid_frame, text="Add", corner_radius=20, command=addexpfunc).grid(row=4, column=3, columnspan=2, pady=5, sticky="ew")
 
@@ -79,7 +106,7 @@ def viewsum():
 
     # ---------------------------------------------------------------------------------------
     def refreshtable():
-        # butangig refresh code para mo refresh and table after adding or deleting expenses
+        #butangig refresh code para mo refresh and table after adding or deleting expenses
         pass
     # ---------------------------------------------------------------------------------------
 
@@ -90,14 +117,14 @@ def viewsum():
 
     # ---------------------------------------------------------------------------------------
     def compute():
-        # butangig compute code para mo compute sa total expenses
+        #butangig compute code para mo compute sa total expenses
         pass
     # ---------------------------------------------------------------------------------------
 
     # ---------------------------------------------------------------------------------------
     def deleteexp():
-            # put delete expense code here
-            pass
+        #put delete expense code here
+        pass
     # ---------------------------------------------------------------------------------------
 
     ctk.CTkButton(content_frame, text="Compute", corner_radius=20, command=compute, fg_color="green").pack(side="right", padx=(0, 70), pady=10)
@@ -116,11 +143,9 @@ def settings():
     ctk.CTkLabel(content_frame, text="About", font=("Arial", 14, "bold")).pack(pady=10)
     ctk.CTkLabel(content_frame, text="Expense Tracker made by:\nCelesios, Avril Satu\nKilat, Sean\nLucabgo, John Paul\nMainit, Christian Jay\nMagpatoc, Sunday Dawn", font=("Arial", 12, "italic")).pack()
 
-
 ctk.CTkButton(button_frame, text="Home", corner_radius=10, command=home).pack(side="left", padx=2, pady=10)
 ctk.CTkButton(button_frame, text="Add Expense", corner_radius=10, command=addexp).pack(side="left", padx=2, pady=10)
 ctk.CTkButton(button_frame, text="View Summary", corner_radius=10, command=viewsum).pack(side="left", padx=2, pady=10)
 ctk.CTkButton(button_frame, text="Settings", corner_radius=10, command=settings).pack(side="left", padx=2, pady=10)
-
 home()
 root.mainloop()
