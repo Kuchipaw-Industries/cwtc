@@ -1,4 +1,6 @@
 # sore if gubot guys HAHAHAHAHA
+# ga use kog Custom Tkinter (CTkinter) instead of tkinter lng
+# ga use sd kog calendar para sa date sa pag add og expenses HAHAHAHA
 
 import customtkinter as ctk
 from tkcalendar import DateEntry
