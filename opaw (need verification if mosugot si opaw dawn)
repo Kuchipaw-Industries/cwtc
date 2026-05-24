@@ -1,0 +1,196 @@
+# sore if gubot guys HAHAHAHAHA
+# ga use kog Custom Tkinter (CTkinter) instead of tkinter lng
+# ga use sd kog calendar para sa date sa pag add og expenses HAHAHAHA
+
+import customtkinter as ctk
+from tkcalendar import DateEntry
+from tkinter import ttk, messagebox
+
+ctk.set_appearance_mode("light")
+ctk.set_default_color_theme("dark-blue")
+
+root = ctk.CTk()
+root.title("Expense Tracker")
+root.geometry("560x400")
+
+button_frame = ctk.CTkFrame(root, corner_radius=10)
+button_frame.pack(side="top")
+
+content_frame = ctk.CTkFrame(root)
+content_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+# here ang data
+expenses = []
+
+def calculate_total():
+    total = 0.0
+    for exp in expenses:
+        try:
+            total += float(exp["amount"])
+        except (ValueError, KeyError):
+            continue
+    return total
+
+def clear_frame():
+    for widget in content_frame.winfo_children():
+        widget.destroy()
+
+def home():
+    clear_frame()
+    ctk.CTkLabel(content_frame, text="--WELCOME--", font=("Arial", 50, "bold")).pack(anchor=ctk.CENTER, pady=(110, 0))
+    ctk.CTkLabel(content_frame, text="Start tracking your expenses now!", font=("Arial", 20)).pack(anchor=ctk.CENTER)
+    ctk.CTkButton(content_frame, text="Add Expense", corner_radius=20, command=addexp).pack(pady=10)
+
+def addexp():
+    clear_frame()
+    grid_frame = ctk.CTkFrame(content_frame)
+    grid_frame.pack(expand=True)
+    grid_frame.place(relx=0.5, rely=0.5, anchor="center")
+
+    ctk.CTkLabel(grid_frame, text="Add Expense", font=("Arial", 15)).grid(row=0, column=3, columnspan=2, pady=10, sticky="ew")
+    ctk.CTkLabel(grid_frame, text="Expense name:", justify=ctk.LEFT).grid(row=1, column=3, pady=(10, 5), sticky="ew")
+    ctk.CTkLabel(grid_frame, text="Amount:", justify=ctk.LEFT).grid(row=2, column=3, pady=5, sticky="ew")
+    ctk.CTkLabel(grid_frame, text="Date:", justify=ctk.LEFT).grid(row=3, column=3, pady=5, sticky="ew")
+
+    # remove global kay ga double og mag input sa expenses
+    name_entry = ctk.CTkEntry(grid_frame, placeholder_text="Enter expense name...")
+    name_entry.grid(row=1, column=4, padx=10, pady=(10, 5), sticky="ew")
+
+    amount_entry = ctk.CTkEntry(grid_frame, placeholder_text="Enter amount...")
+    amount_entry.grid(row=2, column=4, padx=10, pady=5, sticky="ew")
+
+    date_entry = DateEntry(grid_frame, width=37, background="darkblue", foreground="white", borderwidth=2)
+    date_entry.grid(row=3, column=4, padx=10, sticky="ew")
+
+    def addexpfunc():
+        name   = name_entry.get().strip()
+        amount = amount_entry.get().strip()
+        date   = date_entry.get()
+
+        if not name or not amount:
+            messagebox.showerror("Error", "All fields must be filled!")
+            return
+        try:
+            amount_float = float(amount)
+            if amount_float <= 0:
+                raise ValueError
+        except ValueError:
+            messagebox.showerror("Error", "Amount must be a number!")
+            return
+
+        expenses.append({"name": name, "amount": amount_float, "date": date})
+        messagebox.showinfo("Success", "Expense added successfully!")
+        name_entry.delete(0, "end")
+        amount_entry.delete(0, "end")
+
+    ctk.CTkButton(grid_frame, text="Add", corner_radius=20, command=addexpfunc).grid(row=4, column=3, columnspan=2, pady=5, sticky="ew")
+
+def viewsum():
+    clear_frame()
+    ctk.CTkLabel(content_frame, text="Expense Summary", font=("Arial", 15)).pack(pady=10)
+    style = ttk.Style()
+    style.theme_use('default')
+    style.configure("Treeview.Heading", font=("Arial", 12, "bold"), foreground="white", background="#797979")
+
+    tableframe = ctk.CTkFrame(content_frame)
+    tableframe.pack(fill="both", expand=True)
+    vsb = ttk.Scrollbar(tableframe, orient="vertical")
+    vsb.pack(side="right", fill="y")
+
+
+    table = ttk.Treeview(tableframe, columns=('Expenses', 'Amount', 'Date'), show='headings',
+                         yscrollcommand=vsb.set, selectmode="extended")
+    table.column('Expenses', width=100)
+    table.column('Amount',   width=100)
+    table.column('Date',     width=100)
+    table.heading('Expenses', text="Expenses")
+    table.heading('Amount',   text="Amount")
+    table.heading('Date',     text="Date")
+    table.pack(side="left", expand=True, fill="both")
+    vsb.config(command=table.yview)
+
+    # allow user to click rows for selecting spicific expenses 
+    def toggle_select(event):
+        row = table.identify_row(event.y)
+        if not row:
+            return
+        if row in table.selection():
+            table.selection_remove(row)
+        else:
+            table.selection_add(row)
+        return "break"
+
+    table.bind("<Button-1>", toggle_select)
+
+    def refreshtable():
+        table.delete(*table.get_children())
+        for exp in expenses:
+            table.insert("", "end", values=(exp["name"], exp["amount"], exp["date"]))
+
+    totalframe = ctk.CTkFrame(content_frame)
+    totalframe.pack(fill="x", pady=(10, 0))
+    ctk.CTkLabel(totalframe, text="Total:", font=("Arial", 12)).pack(side="left", pady=5)
+    total_label = ctk.CTkLabel(totalframe, text="₱0.00", font=("Arial", 12, "bold"), text_color="green")
+    total_label.pack(side="right", padx=10, pady=5)
+
+    def compute():
+        selected = table.selection()   # get selected rows
+
+        if selected:
+            # only add up the rows the user clicked
+            total = 0.0
+            for sel in selected:
+                values = table.item(sel, "values")  # values = (name, amount, date)
+                try:
+                    total += float(values[1])
+                except (ValueError, KeyError):
+                    continue
+            total_label.configure(text=f"₱{total:,.2f} (selected)")
+        else:
+            # no rows selected = compute everything
+            if len(expenses) == 0:
+                total_label.configure(text="₱0.00")
+            else:
+                total = calculate_total()
+                total_label.configure(text=f"₱{total:,.2f} (all)")
+
+    def deleteexp():
+        selected = table.selection()
+        if not selected:
+            messagebox.showerror("Error", "Select an expense to delete!")
+            return
+        for sel in selected:
+            values = table.item(sel, "values")
+            expenses[:] = [exp for exp in expenses if not (
+                exp["name"]       == values[0] and
+                str(exp["amount"]) == str(values[1]) and
+                exp["date"]       == values[2]
+            )]
+            table.delete(sel)
+        total_label.configure(text="₱0.00")   # reset total after delete
+
+    ctk.CTkButton(content_frame, text="Compute", corner_radius=20, command=compute, fg_color="green").pack(side="right", padx=(0, 70), pady=10)
+    ctk.CTkButton(content_frame, text="Delete",  corner_radius=20, command=deleteexp, fg_color="darkred").pack(side="left", padx=(70, 0), pady=10)
+
+    refreshtable()   # show expenses in table — total stays ₱0.00 until Compute is clicked
+
+def settings():
+    clear_frame()
+    ctk.CTkLabel(content_frame, text="Settings", font=("Arial", 18)).pack(pady=10)
+    ctk.CTkLabel(content_frame, text="Customize your preferences here.", font=("Arial", 14, "bold")).pack()
+
+    switch = ctk.CTkSwitch(content_frame, text="Dark Mode", onvalue="dark", offvalue="light",
+                           command=lambda: ctk.set_appearance_mode(switch.get()))
+    switch.pack(pady=10)
+
+    ctk.CTkLabel(content_frame, text="About", font=("Arial", 14, "bold")).pack(pady=10)
+    ctk.CTkLabel(content_frame, text="Expense Tracker made by:\nCelesios, Avril Satu\nKilat, Sean\nLucabgo, John Paul\nMainit, Christian Jay\nMagpatoc, Sunday Dawn",
+                 font=("Arial", 12, "italic")).pack()
+
+ctk.CTkButton(button_frame, text="Home",         corner_radius=10, command=home).pack(side="left", padx=2, pady=10)
+ctk.CTkButton(button_frame, text="Add Expense",  corner_radius=10, command=addexp).pack(side="left", padx=2, pady=10)
+ctk.CTkButton(button_frame, text="View Summary", corner_radius=10, command=viewsum).pack(side="left", padx=2, pady=10)
+ctk.CTkButton(button_frame, text="Settings",     corner_radius=10, command=settings).pack(side="left", padx=2, pady=10)
+
+home()
+root.mainloop()
