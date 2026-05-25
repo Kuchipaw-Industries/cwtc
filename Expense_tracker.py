@@ -1,27 +1,26 @@
-# sore if gubot guys HAHAHAHAHA
-# ga use kog Custom Tkinter (CTkinter) instead of tkinter lng
-# ga use sd kog calendar para sa date sa pag add og expenses HAHAHAHA
-
 import customtkinter as ctk
 import tkinter as gui
 from tkcalendar import DateEntry
 from tkinter import ttk, messagebox
 from tkinter import ttk
 
+# the default appearance of the UI
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("dark-blue")
 
+# main application window with the title and the size
 root = ctk.CTk()
 root.title("Expense Tracker")
 root.geometry("730x400")
 
+# the frames for the buttons and the content
 button_frame = ctk.CTkFrame(root, corner_radius=10)
 button_frame.pack(side="top")
 
 content_frame = ctk.CTkFrame(root)
 content_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-# here ang data
+# data
 expenses = []
 
 def calculate_total():
@@ -33,16 +32,19 @@ def calculate_total():
             continue
     return total
 
+# removes all widgets from the content frame
 def clear_frame():
     for widget in content_frame.winfo_children():
         widget.destroy()
 
+# the home page where you can see the welcome message and the button to add expenses
 def home():
     clear_frame()
     ctk.CTkLabel(content_frame, text="--WELCOME--", font=("Arial", 50, "bold")).pack(anchor=ctk.CENTER, pady=(110, 0))
     ctk.CTkLabel(content_frame, text="Start tracking your expenses now!", font=("Arial", 20)).pack(anchor=ctk.CENTER)
     ctk.CTkButton(content_frame, text="Add Expense", corner_radius=20, command=addexp).pack(pady=10)
 
+# the add expense page where you can add the name, amount, and date of the expense you want to track
 def addexp():
     clear_frame()
     grid_frame = ctk.CTkFrame(content_frame)
@@ -64,7 +66,6 @@ def addexp():
     date_entry = DateEntry(grid_frame, width=37, background="darkblue", foreground="white", borderwidth=2)
     date_entry.grid(row=3, column=4, padx=10, sticky="ew")
 
-    # ---------------------------------------------------------------------------------------
     def addexpfunc(): # declared a function named addexpfunc
         name = name_entry.get().strip() # "get" function to get the current text of entry box, "strip" to remove spaces.
         amount = amount_entry.get().strip() # as well as here for the amount.
@@ -87,10 +88,10 @@ def addexp():
         name_entry.delete(0, "end") # .delete(0, end) index 0 to end.
         amount_entry.delete(0, "end")
         date_entry.delete(0, "end")
-    # ---------------------------------------------------------------------------------------
 
     ctk.CTkButton(grid_frame, text="Add", corner_radius=20, command=addexpfunc).grid(row=4, column=3, columnspan=2, pady=5, sticky="ew")
-# aron ma view mga expense nga gi add sa "add expense" no shii
+
+# the view summary page where you can view and compute the total of the expenses the user added
 def viewsum():
     clear_frame()
     ctk.CTkLabel(content_frame, text="Expense Summary", font=("Arial", 15)).pack(pady=10)
@@ -127,12 +128,10 @@ def viewsum():
 
     table.bind("<Button-1>", toggle_select)
 
-    # ---------------------------------------------------------------------------------------
     def refreshtable():
         table.delete(*table.get_children())
         for exp in expenses:
             table.insert("", "end", values=(exp["name"], exp["amount"], exp["date"]))
-    # ---------------------------------------------------------------------------------------
 
     totalframe = ctk.CTkFrame(content_frame)
     totalframe.pack(fill="x", pady=(10, 0))
@@ -140,8 +139,7 @@ def viewsum():
     total_label = ctk.CTkLabel(totalframe, text="₱0.00", font=("Arial", 12, "bold"), text_color="green")
     total_label.pack(side="right", padx=10, pady=5)
 
-    # ---------------------------------------------------------------------------------------
-    #to compute the total expensis 
+    #to compute the total expenses 
     def compute():
         selected = table.selection()
         if selected:
@@ -159,17 +157,11 @@ def viewsum():
             else:
                 total = calculate_total()
                 total_label.configure(text=f"₱{total:,.2f} (all)")
-    # ---------------------------------------------------------------------------------------
-
-    # ---------------------------------------------------------------------------------------
-    def deleteexp():
-        pass
-    # ---------------------------------------------------------------------------------------
 
     ctk.CTkButton(content_frame, text="Compute", corner_radius=20, command=compute, fg_color="green").pack(pady=10)
-
     refreshtable()
 
+# the manage expenses page where you can view and delete the expenses the user added
 def manage_expenses():
 
     clear_frame()
@@ -229,7 +221,7 @@ Date: {expense['date']}
             command=delete_selected
         ).pack(side="right", padx=15)
 
-
+# the settings page where you can customize the appearance (dark or light mode) and view the about section
 def settings():
     clear_frame()
     ctk.CTkLabel(content_frame, text="Settings", font=("Arial", 18)).pack(pady=10)
@@ -241,6 +233,7 @@ def settings():
     ctk.CTkLabel(content_frame, text="About", font=("Arial", 14, "bold")).pack(pady=10)
     ctk.CTkLabel(content_frame, text="Expense Tracker made by:\nCelesios, Avril Satu\nKilat, Sean\nLucabgo, John Paul\nMainit, Christian Jay\nMagpatoc, Sunday Dawn", font=("Arial", 12, "italic")).pack()
 
+# the navigation buttons
 ctk.CTkButton(button_frame, text="Home", corner_radius=10, command=home).pack(side="left", padx=2, pady=10)
 ctk.CTkButton(button_frame, text="Add Expense", corner_radius=10, command=addexp).pack(side="left", padx=2, pady=10)
 ctk.CTkButton(button_frame, text="View Summary", corner_radius=10, command=viewsum).pack(side="left", padx=2, pady=10)
