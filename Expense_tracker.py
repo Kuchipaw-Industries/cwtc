@@ -65,27 +65,28 @@ def addexp():
     date_entry.grid(row=3, column=4, padx=10, sticky="ew")
 
     # ---------------------------------------------------------------------------------------
-    def addexpfunc():
-        name = name_entry.get().strip()
-        amount = amount_entry.get().strip()
-        date = date_entry.get().strip()
+    def addexpfunc(): # declared a function named addexpfunc
+        name = name_entry.get().strip() # "get" function to get the current text of entry box, "strip" to remove spaces.
+        amount = amount_entry.get().strip() # as well as here for the amount.
+        date = date_entry.get().strip() # and here for the date.
 
-        if not name or not amount or not date:
-            messagebox.showerror("Error", "All fields must be filled!")
-            return
+        if not name or not amount or not date: # creates a decision control for name, amount, and date.
+            messagebox.showerror("Error", "All fields must be filled!") # shows if decision control is true "Error, All Fields must be filled!"
+            return # used to stop the function with return.
         try:
-            amount = float(amount)
-        except ValueError:
-            messagebox.showerror("Error", "Amount must be a number!")
-            return
+            amount = float(amount) # attempt to convert amount string into a number which is the float.
+        except ValueError: # used valuerror for invalid type conversion.
+            messagebox.showerror("Error", "Amount must be a number!") # shows if ValueError is true: "Error, Amount must be a number!"
+            return # used to stop the function with return.
 
-        expense = {"name": name, "amount": amount, "date": date}
-        expenses.append(expense)
-        messagebox.showinfo("Success", "Expense added successfully!")
+        expense = {"name": name, "amount": amount, "date": date} # creates dictionary (string) for name, amount & date
+        expenses.append(expense) # to add the dictionary up to the list.
+        messagebox.showinfo("Success", "Expense added successfully!") # shows if "Success, Expense added successfully!"
 
         # clear entries
-        name_entry.delete(0, "end")
+        name_entry.delete(0, "end") # .delete(0, end) index 0 to end.
         amount_entry.delete(0, "end")
+        date_entry.delete(0, "end")
     # ---------------------------------------------------------------------------------------
 
     ctk.CTkButton(grid_frame, text="Add", corner_radius=20, command=addexpfunc).grid(row=4, column=3, columnspan=2, pady=5, sticky="ew")
