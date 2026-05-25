@@ -22,7 +22,16 @@ content_frame = ctk.CTkFrame(root)
 content_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
 # here ang data
-expenses = [] 
+expenses = []
+
+def calculate_total():
+    total = 0.0
+    for exp in expenses:
+        try:
+            total += float(exp["amount"])
+        except (ValueError, KeyError):
+            continue
+    return total
 
 def clear_frame():
     for widget in content_frame.winfo_children():
@@ -37,8 +46,8 @@ def home():
 def addexp():
     clear_frame()
     grid_frame = ctk.CTkFrame(content_frame)
-    grid_frame.pack(expand=True)  
-    grid_frame.place(relx=0.5, rely=0.5, anchor="center") 
+    grid_frame.pack(expand=True)
+    grid_frame.place(relx=0.5, rely=0.5, anchor="center")
 
     ctk.CTkLabel(grid_frame, text="Add Expense", font=("Arial", 15)).grid(row=0, column=3, columnspan=2, pady=10, sticky="ew")
     ctk.CTkLabel(grid_frame, text="Expense name:", justify=ctk.LEFT).grid(row=1, column=3, pady=(10, 5), sticky="ew")
@@ -46,7 +55,6 @@ def addexp():
     ctk.CTkLabel(grid_frame, text="Date:", justify=ctk.LEFT).grid(row=3, column=3, pady=5, sticky="ew")
 
     # keep ang references para ma access ang mga values later ge add ni nako (cj opaw) para sd mag run ang "name_entry" or values sa addexpfunc
-    global name_entry, amount_entry, date_entry
     name_entry = ctk.CTkEntry(grid_frame, placeholder_text="Enter expense name...")
     name_entry.grid(row=1, column=4, padx=10, pady=(10, 5), sticky="ew")
 
@@ -78,11 +86,10 @@ def addexp():
         # clear entries
         name_entry.delete(0, "end")
         amount_entry.delete(0, "end")
-        date_entry.delete(0, "end")
     # ---------------------------------------------------------------------------------------
 
     ctk.CTkButton(grid_frame, text="Add", corner_radius=20, command=addexpfunc).grid(row=4, column=3, columnspan=2, pady=5, sticky="ew")
-
+# aron ma view mga expense nga gi add sa "add expense" no shii
 def viewsum():
     clear_frame()
     ctk.CTkLabel(content_frame, text="Expense Summary", font=("Arial", 15)).pack(pady=10)
@@ -95,38 +102,72 @@ def viewsum():
     vsb = ttk.Scrollbar(tableframe, orient="vertical")
     vsb.pack(side="right", fill="y")
 
-    table = ttk.Treeview(tableframe, columns=('Expenses', 'Amount', 'Date'), show='headings', yscrollcommand=vsb.set)
+    table = ttk.Treeview(tableframe, columns=('Expenses', 'Amount', 'Date'), show='headings',
+                         yscrollcommand=vsb.set, selectmode="extended")
     table.column('Expenses', width=100)
     table.column('Amount', width=100)
     table.column('Date', width=100)
     table.heading('Expenses', text="Expenses")
-    table.heading('Amount', text="Amount")  
+    table.heading('Amount', text="Amount")
     table.heading('Date', text="Date")
     table.pack(side="left", expand=True, fill="both")
     vsb.config(command=table.yview)
 
+    # single click to select/deselect — no Ctrl needed aron di lisod 
+    def toggle_select(event):
+        row = table.identify_row(event.y)
+        if not row:
+            return
+        if row in table.selection():
+            table.selection_remove(row)
+        else:
+            table.selection_add(row)
+        return "break"
+
+    table.bind("<Button-1>", toggle_select)
+
     # ---------------------------------------------------------------------------------------
     def refreshtable():
-        #butangig refresh code para mo refresh and table after adding or deleting expenses
-        pass
+        table.delete(*table.get_children())
+        for exp in expenses:
+            table.insert("", "end", values=(exp["name"], exp["amount"], exp["date"]))
     # ---------------------------------------------------------------------------------------
 
     totalframe = ctk.CTkFrame(content_frame)
     totalframe.pack(fill="x", pady=(10, 0))
     ctk.CTkLabel(totalframe, text="Total:", font=("Arial", 12)).pack(side="left", pady=5)
-    ctk.CTkLabel(totalframe, text="₱0.00", font=("Arial", 12, "bold"), text_color="green").pack(side="right", padx=10, pady=5)
+    total_label = ctk.CTkLabel(totalframe, text="₱0.00", font=("Arial", 12, "bold"), text_color="green")
+    total_label.pack(side="right", padx=10, pady=5)
 
     # ---------------------------------------------------------------------------------------
+    #to compute the total expensis 
     def compute():
-        #butangig compute code para mo compute sa total expenses
-        pass
+        selected = table.selection()
+        if selected:
+            total = 0.0
+            for sel in selected:
+                values = table.item(sel, "values")
+                try:
+                    total += float(values[1])
+                except (ValueError, KeyError):
+                    continue
+            total_label.configure(text=f"₱{total:,.2f} (selected)")
+        else:
+            if len(expenses) == 0:
+                total_label.configure(text="₱0.00")
+            else:
+                total = calculate_total()
+                total_label.configure(text=f"₱{total:,.2f} (all)")
     # ---------------------------------------------------------------------------------------
 
     # ---------------------------------------------------------------------------------------
     def deleteexp():
-        #put delete expense code here
         pass
     # ---------------------------------------------------------------------------------------
+
+    ctk.CTkButton(content_frame, text="Compute", corner_radius=20, command=compute, fg_color="green").pack(pady=10)
+
+    refreshtable()
 
 def manage_expenses():
 
@@ -141,7 +182,7 @@ def manage_expenses():
     scroll_frame = ctk.CTkScrollableFrame(content_frame, width=600, height=250)
     scroll_frame.pack(pady=10, padx=10, fill="both", expand=True)
 
-    # if no expenses
+    # if no expenses = way makita means wala
     if len(expenses) == 0:
 
         ctk.CTkLabel(
@@ -171,25 +212,9 @@ Date: {expense['date']}
 
         # delete button for each expense
         def delete_selected(i=index):
+         # put delete here
+            pass
 
-            expenses.pop(i)
-
-            messagebox.showinfo("Success", "Expense deleted successfully!")
-
-            manage_expenses()
-
-        ctk.CTkButton(
-            expense_frame,
-            text="Delete",
-            width=80,
-            fg_color="darkred",
-            hover_color="red",
-            command=delete_selected
-        ).pack(side="right", padx=15)
-
-    pass
-
-    
 def settings():
     clear_frame()
     ctk.CTkLabel(content_frame, text="Settings", font=("Arial", 18)).pack(pady=10)
@@ -206,5 +231,6 @@ ctk.CTkButton(button_frame, text="Add Expense", corner_radius=10, command=addexp
 ctk.CTkButton(button_frame, text="View Summary", corner_radius=10, command=viewsum).pack(side="left", padx=2, pady=10)
 ctk.CTkButton(button_frame, text="Manage Expenses", corner_radius=10, command=manage_expenses).pack(side="left", padx=2, pady=10)
 ctk.CTkButton(button_frame, text="Settings", corner_radius=10, command=settings).pack(side="left", padx=2, pady=10)
+
 home()
 root.mainloop()
