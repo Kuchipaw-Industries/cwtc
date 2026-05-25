@@ -228,8 +228,7 @@ Date: {expense['date']}
             hover_color="red",
             command=delete_selected
         ).pack(side="right", padx=15)
- 
-            pass
+
 
 def settings():
     clear_frame()
