@@ -213,7 +213,22 @@ Date: {expense['date']}
 
         # delete button for each expense
         def delete_selected(i=index):
-         # put delete here
+ 
+            expenses.pop(i)
+ 
+            messagebox.showinfo("Success", "Expense deleted successfully!")
+ 
+            manage_expenses()
+ 
+        ctk.CTkButton(
+            expense_frame,
+            text="Delete",
+            width=80,
+            fg_color="darkred",
+            hover_color="red",
+            command=delete_selected
+        ).pack(side="right", padx=15)
+ 
             pass
 
 def settings():
