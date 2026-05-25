@@ -3,6 +3,7 @@
 # ga use sd kog calendar para sa date sa pag add og expenses HAHAHAHA
 
 import customtkinter as ctk
+import tkinter as gui
 from tkcalendar import DateEntry
 from tkinter import ttk, messagebox
 from tkinter import ttk
@@ -12,7 +13,7 @@ ctk.set_default_color_theme("dark-blue")
 
 root = ctk.CTk()
 root.title("Expense Tracker")
-root.geometry("560x400")
+root.geometry("730x400")
 
 button_frame = ctk.CTkFrame(root, corner_radius=10)
 button_frame.pack(side="top")
@@ -127,11 +128,68 @@ def viewsum():
         pass
     # ---------------------------------------------------------------------------------------
 
-    ctk.CTkButton(content_frame, text="Compute", corner_radius=20, command=compute, fg_color="green").pack(side="right", padx=(0, 70), pady=10)
-    ctk.CTkButton(content_frame, text="Delete", corner_radius=20, command=deleteexp, fg_color="darkred").pack(side="left", padx=(70, 0), pady=10)
+def manage_expenses():
 
-    refreshtable()
+    clear_frame()
 
+    ctk.CTkLabel(
+        content_frame,
+        text="Manage Expenses",
+        font=("Arial", 22, "bold")
+    ).pack(pady=10)
+
+    scroll_frame = ctk.CTkScrollableFrame(content_frame, width=600, height=250)
+    scroll_frame.pack(pady=10, padx=10, fill="both", expand=True)
+
+    # if no expenses
+    if len(expenses) == 0:
+
+        ctk.CTkLabel(
+            scroll_frame,
+            text="No expenses found.",
+            font=("Arial", 14)
+        ).pack(pady=20)
+
+    # display all expenses
+    for index, expense in enumerate(expenses):
+
+        expense_frame = ctk.CTkFrame(scroll_frame, corner_radius=15)
+        expense_frame.pack(fill="x", pady=5, padx=5)
+
+        info_text = f"""
+Expense: {expense['name']}
+Amount: ₱{expense['amount']}
+Date: {expense['date']}
+"""
+
+        ctk.CTkLabel(
+            expense_frame,
+            text=info_text,
+            justify="left",
+            font=("Arial", 13)
+        ).pack(side="left", padx=15, pady=10)
+
+        # delete button for each expense
+        def delete_selected(i=index):
+
+            expenses.pop(i)
+
+            messagebox.showinfo("Success", "Expense deleted successfully!")
+
+            manage_expenses()
+
+        ctk.CTkButton(
+            expense_frame,
+            text="Delete",
+            width=80,
+            fg_color="darkred",
+            hover_color="red",
+            command=delete_selected
+        ).pack(side="right", padx=15)
+
+    pass
+
+    
 def settings():
     clear_frame()
     ctk.CTkLabel(content_frame, text="Settings", font=("Arial", 18)).pack(pady=10)
@@ -146,6 +204,7 @@ def settings():
 ctk.CTkButton(button_frame, text="Home", corner_radius=10, command=home).pack(side="left", padx=2, pady=10)
 ctk.CTkButton(button_frame, text="Add Expense", corner_radius=10, command=addexp).pack(side="left", padx=2, pady=10)
 ctk.CTkButton(button_frame, text="View Summary", corner_radius=10, command=viewsum).pack(side="left", padx=2, pady=10)
+ctk.CTkButton(button_frame, text="Manage Expenses", corner_radius=10, command=manage_expenses).pack(side="left", padx=2, pady=10)
 ctk.CTkButton(button_frame, text="Settings", corner_radius=10, command=settings).pack(side="left", padx=2, pady=10)
 home()
 root.mainloop()
